@@ -15,7 +15,7 @@ static const char PanicFIDRegistryKey = 'k';
 
 typedef struct _chunk {
 	int size; // chunk size
-	const char *buffer; // chunk data
+	char *buffer; // chunk data
 	char* toread; // chunk to read
 } chunk;
 
@@ -152,25 +152,25 @@ void clua_setgostate(lua_State* L, size_t gostateindex)
 }
 
 static int writer (lua_State *L, const void* b, size_t size, void* B) {
-  static int count=0;
-  (void)L;
-  luaL_addlstring((luaL_Buffer*) B, (const char *)b, size);
-  return 0;
+	static int count=0;
+	(void)L;
+	luaL_addlstring((luaL_Buffer*) B, (const char *)b, size);
+	return 0;
 }
 
 // dump function chunk from luaL_loadstring
 int dump_chunk (lua_State *L) {
-  luaL_Buffer b;
-  luaL_checktype(L, -1, LUA_TFUNCTION);
-  lua_settop(L, -1);
-  luaL_buffinit(L,&b);
-  int errno;
-  errno = lua_dump(L, writer, &b);
-  if (errno != 0){
-    return luaL_error(L, "unable to dump given function, errno:%d", errno);
-  }
-  luaL_pushresult(&b);
-  return 0;
+	luaL_Buffer b;
+	luaL_checktype(L, -1, LUA_TFUNCTION);
+	lua_settop(L, -1);
+	luaL_buffinit(L,&b);
+	int errno;
+	errno = lua_dump(L, writer, &b);
+	if (errno != 0){
+	return luaL_error(L, "unable to dump given function, errno:%d", errno);
+	}
+	luaL_pushresult(&b);
+	return 0;
 }
 
 static const char * reader (lua_State *L, void *ud, size_t *sz) {
@@ -189,7 +189,7 @@ static const char * reader (lua_State *L, void *ud, size_t *sz) {
 }
 
 // load function chunk dumped from dump_chunk
-int load_chunk(lua_State *L, const char *b, int size, const char* chunk_name) {
+int load_chunk(lua_State *L, char *b, int size, const char* chunk_name) {
 	chunk ck;
 	ck.buffer = b;
 	ck.size = size;
